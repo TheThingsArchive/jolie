@@ -3,17 +3,12 @@
 FROM golang:latest
 
 #Cache dependencies
-RUN go get "github.com/influxdb/influxdb/client"
-RUN go get "github.com/joho/godotenv"
+RUN go get	"github.com/streadway/amqp"
 
 # Copy the local package files to the container's workspace.
-ADD . /go/src/github.com/thethingsnetwork/croft
-WORKDIR /go/src/github.com/thethingsnetwork/croft
-
-# Document that the service listens on port 1700
-EXPOSE 1700
+ADD . /go/src/github.com/thethingsnetwork/jolie
+WORKDIR /go/src/github.com/thethingsnetwork/jolie
 
 RUN go build .
 
-CMD ["./croft"]
-
+CMD ["./jolie"]

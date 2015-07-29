@@ -1,3 +1,0 @@
-jolie:
-  build: .
-  env_file: .env
