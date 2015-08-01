@@ -48,6 +48,7 @@ func JSONResponse(status int, data interface{}, w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
+		w.WriteHeader(status)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(b)
 	}
@@ -68,7 +69,20 @@ func ApplicationsIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApplicationsCreateHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Listing Applications registered with the things network")
+	decoder := json.NewDecoder(r.Body)
+	app := new(Application)
+	err := decoder.Decode(&app)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// Insert Datas
+	err = db.DB("jolie").C("applications").Insert(app)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	JSONResponse(http.StatusCreated, app, w)
 }
 
 func DevicesIndexHandler(w http.ResponseWriter, r *http.Request) {
