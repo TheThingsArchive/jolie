@@ -3,7 +3,8 @@
 FROM golang:latest
 
 #Cache dependencies
-RUN go get	"github.com/streadway/amqp"
+RUN go get "github.com/streadway/amqp"
+RUN go get "github.com/thethingsnetwork/server-shared"
 
 # Copy the local package files to the container's workspace.
 ADD . /go/src/github.com/thethingsnetwork/jolie
