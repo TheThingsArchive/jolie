@@ -2,10 +2,13 @@ package main
 
 import (
 	"log"
+	"net/http"
 )
 
 func main() {
 	log.Print("Jolie is ALIVE")
+	db = NewMongoSession()
+	go http.ListenAndServe(":8080", Api())
 
 	consumer, err := connectConsumer()
 	if err != nil {
