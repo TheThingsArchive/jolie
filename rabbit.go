@@ -119,6 +119,15 @@ func (d *RabbitConsumer) handleDeliveries(queues *ConsumerQueues) {
 			}
 			queues.GatewayStatuses <- &status
 			delivery.Ack(false)
+		case delivery := <-d.rxPackets:
+			var rxPacket shared.RxPacket
+			err := json.Unmarshal(delivery.Body, &rxPacket)
+			if err != nil {
+				log.Printf("Failed to unmarshal RX packet: %s (%q)", err.Error(), delivery.Body)
+				continue
+			}
+			queues.RxPackets <- &rxPacket
+			delivery.Ack(false)
 		}
 	}
 }
