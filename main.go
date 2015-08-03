@@ -7,7 +7,13 @@ import (
 
 func main() {
 	log.Print("Jolie is ALIVE")
-	db = NewMongoSession()
+
+	var err error
+	db, err = NewMongoSession()
+	if err != nil {
+		log.Fatalf("Failed to connect storage: %s", err.Error())
+	}
+
 	go http.ListenAndServe(":8080", Api())
 
 	consumer, err := connectConsumer()
