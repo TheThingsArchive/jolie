@@ -5,13 +5,17 @@ import (
 	"net/http"
 )
 
+var (
+	database Database
+)
+
 func main() {
 	log.Print("Jolie is ALIVE")
 
 	var err error
-	db, err = NewMongoSession()
+	database, err = connectDatabase()
 	if err != nil {
-		log.Fatalf("Failed to connect storage: %s", err.Error())
+		log.Fatalf("Failed to connect database: %s", err.Error())
 	}
 
 	go http.ListenAndServe(":8080", Api())
@@ -30,6 +34,15 @@ func main() {
 			log.Printf("RX packet: %#v", rxPacket)
 		}
 	}
+}
+
+func connectDatabase() (Database, error) {
+	db, err := NewMongoDatabase()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func connectConsumer() (Consumer, error) {

@@ -59,13 +59,12 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApplicationsIndexHandler(w http.ResponseWriter, r *http.Request) {
-	res := make([]Application, 0)
-	err := db.DB("jolie").C("applications").Find(nil).Sort("-_id").Limit(200).All(&res)
+	apps, err := database.GetApplications()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	JSONResponse(http.StatusOK, res, w)
+	JSONResponse(http.StatusOK, apps, w)
 }
 
 func ApplicationsCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +76,7 @@ func ApplicationsCreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Insert Datas
-	err = db.DB("jolie").C("applications").Insert(app)
+	err = database.SaveApplication(app)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
