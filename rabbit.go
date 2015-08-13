@@ -18,9 +18,9 @@ func EnsureRabbitConnection() (*amqp.Connection, error) {
 			time.Sleep(time.Duration(2) * time.Second)
 			log.Print("Retrying.....")
 		} else {
+			log.Print("Got rabbit connection")
 			return conn, nil
 		}
 	}
-	log.Print("Got rabbit connection")
 	return nil, err
 }

@@ -3,12 +3,15 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
 	log.Print("Jolie is ALIVE")
 	db = NewMongoSession()
 	go http.ListenAndServe(":8080", Api())
+	time.Sleep(3 * time.Second)
+	InfluxTest()
 
 	// Connects opens an AMQP connection from the credentials in the URL.
 	conn, err := EnsureRabbitConnection()
