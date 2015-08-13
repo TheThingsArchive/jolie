@@ -1,5 +1,6 @@
-TEST="FOOBAR"
-OTHER="NOBAR"
+AMQP_URI=amqp://guest:guest@rabbitmq:5672
+MONGODB_URL=mongodb
+PRE_CREATE_DB="jolie"
 INFLUXDB_URL=influxdb
 INFLUXDB_PORT=8086
 INFLUXDB_USERNAME=root

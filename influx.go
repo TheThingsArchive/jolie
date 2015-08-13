@@ -10,9 +10,6 @@ import (
 
 func InfluxTest() {
 	log.Println("TESTING INFLUX")
-	log.Println(os.Getenv("TEST"))
-	log.Println(os.Getenv("OTHER"))
-	log.Println(os.Getenv("INFLUXDB_URL"))
 	u, err := url.Parse(
 		fmt.Sprintf(
 			"http://%s:%s",
