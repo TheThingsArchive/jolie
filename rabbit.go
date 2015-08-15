@@ -21,13 +21,13 @@ type RabbitConsumer struct {
 	rxPackets       <-chan amqp.Delivery
 }
 
-func ConnectRabbitConsumer() (Consumer, error) {
+func ConnectRabbitConsumer() (*RabbitConsumer, error) {
 	var err error
 	for i := 0; i < RABBIT_ATTEMPTS; i++ {
 		uri := os.Getenv("AMQP_URI")
 		conn, err := amqp.Dial(uri)
 		if err != nil {
-			log.Printf("Failed to connect: %s", err.Error())
+			log.Printf("Failed to connect to %s: %s", uri, err.Error())
 			time.Sleep(time.Duration(2) * time.Second)
 		} else {
 			consumer := &RabbitConsumer{

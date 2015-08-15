@@ -8,8 +8,11 @@ import (
 	"os"
 )
 
-func InfluxTest() {
-	log.Println("TESTING INFLUX")
+type InfluxDatabase struct {
+	conn *client.Client
+}
+
+func ConnectInfluxDatabase() (*InfluxDatabase, error) {
 	u, err := url.Parse(
 		fmt.Sprintf(
 			"http://%s:%s",
@@ -18,7 +21,8 @@ func InfluxTest() {
 		),
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to build address: %s", err.Error())
+		return nil, err
 	}
 
 	conf := client.Config{
@@ -27,15 +31,34 @@ func InfluxTest() {
 		Password: os.Getenv("INFLUXDB_PASSWORD"),
 	}
 
-	con, err := client.NewClient(conf)
+	conn, err := client.NewClient(conf)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to create a new InfluxDB client: %s", err.Error())
+		return nil, err
 	}
 
-	log.Print("PINGING INFLUX")
-	dur, ver, err := con.Ping()
-	if err != nil {
-		log.Fatal(err)
+	return &InfluxDatabase{conn}, nil
+}
+
+func (ps *InfluxDatabase) Configure() error {
+	return nil
+}
+
+func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
+	for {
+		select {
+		case status := <-queues.GatewayStatuses:
+			log.Printf("Storing a gateway status %#v", status)
+			ps.storeGatewayStatus(status)
+		case packet := <-queues.RxPackets:
+			log.Printf("Storing a RX packet %#v", packet)
+			ps.storeRxPacket(packet)
+		}
 	}
-	log.Printf("Happy as a Hippo! %v, %s", dur, ver)
+}
+
+func (ps *InfluxDatabase) storeGatewayStatus(status *shared.GatewayStatus) {
+	point := client.Point{
+		Measurement: "gatewayStatuses",
+	}
 }

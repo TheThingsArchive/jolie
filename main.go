@@ -6,57 +6,84 @@ import (
 )
 
 var (
+	consumer Consumer
 	database Database
+	handlers []PacketHandler = make([]PacketHandler, 0)
+	store    PacketStore
 )
 
 func main() {
 	log.Print("Jolie is ALIVE")
 
-	InfluxTest()
-
-	var err error
-	database, err = connectDatabase()
+	err := connectDatabase()
 	if err != nil {
 		log.Fatalf("Failed to connect database: %s", err.Error())
 	}
 
-	go http.ListenAndServe(":8080", Api())
-
-	consumer, err := connectConsumer()
+	err = connectConsumer()
 	if err != nil {
 		log.Fatalf("Failed to connect consumer: %s", err.Error())
 	}
 
+	err = connectStore()
+	if err != nil {
+		log.Fatalf("Failed to connect the store: %s", err.Error())
+	}
+
+	go http.ListenAndServe(":8080", Api())
+
 	queues, err := consumer.Consume()
-	for {
-		select {
-		case gatewayStatus := <-queues.GatewayStatuses:
-			log.Printf("Gateway status: %#v", gatewayStatus)
-		case rxPacket := <-queues.RxPackets:
-			log.Printf("RX packet: %#v", rxPacket)
-		}
-	}
-}
-
-func connectDatabase() (Database, error) {
-	db, err := NewMongoDatabase()
 	if err != nil {
-		return nil, err
+		log.Fatalf("Failed to consume queues: %s", err.Error())
 	}
 
-	return db, nil
+	log.Printf("Consuming queues in %d handlers", len(handlers))
+	for _, h := range handlers {
+		go h.Handle(queues)
+	}
+
+	select {}
 }
 
-func connectConsumer() (Consumer, error) {
-	consumer, err := ConnectRabbitConsumer()
+func connectDatabase() error {
+	var err error
+	database, err = ConnectMongoDatabase()
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	return nil
+}
+
+func connectConsumer() error {
+	var err error
+	consumer, err = ConnectRabbitConsumer()
+	if err != nil {
+		return err
 	}
 
 	err = consumer.Configure()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return consumer, nil
+	return nil
+}
+
+func connectStore() error {
+	influx, err := ConnectInfluxDatabase()
+	if err != nil {
+		return err
+	}
+
+	err = influx.Configure()
+	if err != nil {
+		return err
+	}
+
+	// Influx acts both as a store and as a handler
+	store = influx
+	handlers = append(handlers, influx)
+
+	return nil
 }

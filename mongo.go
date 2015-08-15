@@ -17,17 +17,17 @@ type MongoDatabase struct {
 	session *mgo.Session
 }
 
-func NewMongoDatabase() (*MongoDatabase, error) {
+func ConnectMongoDatabase() (*MongoDatabase, error) {
 	var err error
 	for i := 0; i < MONGODB_ATTEMPTS; i++ {
 		uri := os.Getenv("MONGODB_URI")
 		var session *mgo.Session
 		session, err = mgo.Dial(fmt.Sprintf("%s:27017", uri))
 		if err != nil {
-			log.Printf("Failed to connect: %s", err.Error())
+			log.Printf("Failed to connect to %s: %s", uri, err.Error())
 			time.Sleep(time.Duration(2) * time.Second)
 		} else {
-			log.Printf("Connected to %s", err.Error())
+			log.Printf("Connected to %s", uri)
 			session.SetMode(mgo.Monotonic, true)
 			session.SetSocketTimeout(time.Duration(6) * time.Second)
 			session.SetSyncTimeout(time.Duration(6) * time.Second)

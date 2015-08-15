@@ -1,9 +1,5 @@
 package main
 
-import (
-	"github.com/thethingsnetwork/server-shared"
-)
-
 type Database interface {
 	//FindApplication(id string) (*Application, error)
 	GetApplications() ([]*Application, error)
@@ -14,7 +10,4 @@ type Database interface {
 	//GetDevice() ([]*Device, error)
 	//UpdateDevice(device *Device, params map[string]interface{}) error
 	//SaveDevice(device *Device) error
-
-	RecordGatewayStatus(*shared.GatewayStatus) error
-	RecordRxPacket(*shared.RxPacket) error
 }
