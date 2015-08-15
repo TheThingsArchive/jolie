@@ -1,33 +1,20 @@
 package main
 
-func findApplication(id string) (*Application, error) {
-	return nil, nil
-}
+import (
+	"github.com/thethingsnetwork/server-shared"
+)
 
-func getApplications() ([]*Application, error) {
-	return nil, nil
-}
+type Database interface {
+	//FindApplication(id string) (*Application, error)
+	GetApplications() ([]*Application, error)
+	//UpdateApplication(app *Application, params map[string]interface{}) error
+	SaveApplication(app *Application) error
 
-func updateApplication(app *Application, params map[string]interface{}) error {
-	return nil
-}
+	//FindDevice(id string) (*Device, error)
+	//GetDevice() ([]*Device, error)
+	//UpdateDevice(device *Device, params map[string]interface{}) error
+	//SaveDevice(device *Device) error
 
-func saveApplication(app *Application) error {
-	return nil
-}
-
-func findDevice(id string) (*Device, error) {
-	return nil, nil
-}
-
-func getDevice() ([]*Device, error) {
-	return nil, nil
-}
-
-func updateDevice(device *Device, params map[string]interface{}) error {
-	return nil
-}
-
-func saveDevice(device *Device) error {
-	return nil
+	RecordGatewayStatus(*shared.GatewayStatus) error
+	RecordRxPacket(*shared.RxPacket) error
 }
