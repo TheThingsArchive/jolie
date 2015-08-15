@@ -8,23 +8,30 @@ import (
 	"time"
 )
 
+const (
+	MONGODB_ATTEMPTS = 20
+)
+
 var (
 	db *mgo.Session
 )
 
-func NewMongoSession() *mgo.Session {
-	log.Print("Creating MongoDB connection")
-	for {
-		log.Printf("Dialling: %s", os.Getenv("MONGODB_URL"))
-		s, err := mgo.Dial(fmt.Sprintf("%s:27017", os.Getenv("MONGODB_URL")))
+func NewMongoSession() (*mgo.Session, error) {
+	var err error
+	for i := 0; i < MONGODB_ATTEMPTS; i++ {
+		uri := os.Getenv("MONGODB_URI")
+		var s *mgo.Session
+		s, err = mgo.Dial(fmt.Sprintf("%s:27017", uri))
 		if err != nil {
-			log.Printf("Mongo Connection Error: %s", err.Error())
-			time.Sleep(1 * time.Second)
+			log.Printf("Failed to connect: %s", err.Error())
+			time.Sleep(time.Duration(2) * time.Second)
 		} else {
+			log.Printf("Connected to %s", err.Error())
 			s.SetMode(mgo.Monotonic, true)
 			s.SetSocketTimeout(time.Millisecond * 6000)
 			s.SetSyncTimeout(time.Millisecond * 6000)
-			return s
+			return s, nil
 		}
 	}
+	return nil, err
 }
