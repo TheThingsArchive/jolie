@@ -8,6 +8,7 @@ RUN go get "github.com/gorilla/mux"
 RUN go get "github.com/thethingsnetwork/server-shared"
 RUN go get "gopkg.in/mgo.v2"
 RUN go get "gopkg.in/mgo.v2/bson"
+RUN go get "github.com/influxdb/influxdb/client"
 
 # Copy the local package files to the container's workspace.
 ADD . /go/src/github.com/thethingsnetwork/jolie

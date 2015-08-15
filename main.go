@@ -3,10 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 )
 
 func main() {
 	log.Print("Jolie is ALIVE")
+
+	InfluxTest()
 
 	var err error
 	db, err = NewMongoSession()
