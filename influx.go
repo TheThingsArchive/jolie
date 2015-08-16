@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"time"
 )
 
 type InfluxDatabase struct {
@@ -49,16 +50,50 @@ func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
 		select {
 		case status := <-queues.GatewayStatuses:
 			log.Printf("Storing a gateway status %#v", status)
-			ps.storeGatewayStatus(status)
+			ps.store("gateway_status",
+				map[string]string{
+					"eui": status.Eui,
+				},
+				map[string]interface{}{
+					"latitude":  status.Latitude,
+					"longitude": status.Longitude,
+					"altitude":  status.Altitude,
+				},
+				status.Time)
 		case packet := <-queues.RxPackets:
 			log.Printf("Storing a RX packet %#v", packet)
-			ps.storeRxPacket(packet)
+			ps.store("rx_packets",
+				map[string]string{
+					"gateway_eui": packet.GatewayEui,
+					"node_eui":    packet.NodeEui,
+				},
+				map[string]interface{}{
+					"data": packet.Data,
+				},
+				packet.Time)
 		}
 	}
 }
 
-func (ps *InfluxDatabase) storeGatewayStatus(status *shared.GatewayStatus) {
+func (ps *InfluxDatabase) store(measurement string, tags map[string]string, fields map[string]interface{}, time time.Time) error {
 	point := client.Point{
-		Measurement: "gatewayStatuses",
+		Measurement: measurement,
+		Tags:        tags,
+		Fields:      fields,
+		Time:        time,
+		Precision:   "n",
 	}
+
+	bps := client.BatchPoints{
+		Points:          []client.Point{point},
+		Database:        os.Getenv("INFLUXDB_DBNAME"),
+		RetentionPolicy: "default",
+	}
+	_, err := ps.conn.Write(bps)
+	if err != nil {
+		log.Printf("Failed to write data: %s", err.Error())
+		return err
+	}
+
+	return nil
 }
