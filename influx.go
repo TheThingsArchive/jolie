@@ -42,6 +42,19 @@ func ConnectInfluxDatabase() (*InfluxDatabase, error) {
 }
 
 func (ps *InfluxDatabase) Configure() error {
+	q := client.Query{
+		Command: fmt.Sprintf("create database %s", os.Getenv("INFLUXDB_DBNAME")),
+	}
+	res, err := ps.conn.Query(q)
+	if err != nil {
+		log.Printf("Failed to create database: %s", err.Error())
+		return err
+	}
+
+	if res.Error() != nil {
+		log.Printf("Failed to create database: %s", res.Error().Error())
+	}
+
 	return nil
 }
 
@@ -49,19 +62,17 @@ func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
 	for {
 		select {
 		case status := <-queues.GatewayStatuses:
-			log.Printf("Storing a gateway status %#v", status)
 			ps.store("gateway_status",
 				map[string]string{
 					"eui": status.Eui,
 				},
 				map[string]interface{}{
-					"latitude":  status.Latitude,
-					"longitude": status.Longitude,
-					"altitude":  status.Altitude,
+					"latitude":  *status.Latitude,
+					"longitude": *status.Longitude,
+					"altitude":  *status.Altitude,
 				},
 				status.Time)
 		case packet := <-queues.RxPackets:
-			log.Printf("Storing a RX packet %#v", packet)
 			ps.store("rx_packets",
 				map[string]string{
 					"gateway_eui": packet.GatewayEui,
@@ -75,13 +86,14 @@ func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
 	}
 }
 
-func (ps *InfluxDatabase) store(measurement string, tags map[string]string, fields map[string]interface{}, time time.Time) error {
+func (ps *InfluxDatabase) store(measurement string, tags map[string]string, fields map[string]interface{}, t time.Time) error {
+	log.Printf("Storing in %s with tags %#v, time %s: %#v", measurement, tags, t, fields)
+
 	point := client.Point{
 		Measurement: measurement,
 		Tags:        tags,
 		Fields:      fields,
-		Time:        time,
-		Precision:   "n",
+		Time:        t,
 	}
 
 	bps := client.BatchPoints{
