@@ -58,7 +58,7 @@ func (ps *InfluxDatabase) Configure() error {
 	return nil
 }
 
-func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
+func (ps *InfluxDatabase) Handle(queues *shared.ConsumerQueues) {
 	for {
 		select {
 		case status := <-queues.GatewayStatuses:

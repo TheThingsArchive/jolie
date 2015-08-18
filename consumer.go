@@ -6,10 +6,5 @@ import (
 
 type Consumer interface {
 	Configure() error
-	Consume() (*ConsumerQueues, error)
-}
-
-type ConsumerQueues struct {
-	GatewayStatuses chan *shared.GatewayStatus
-	RxPackets       chan *shared.RxPacket
+	Consume() (*shared.ConsumerQueues, error)
 }

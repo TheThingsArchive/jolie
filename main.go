@@ -30,6 +30,11 @@ func main() {
 		log.Fatalf("Failed to connect the store: %s", err.Error())
 	}
 
+	err = addHandlers()
+	if err != nil {
+		log.Fatalf("Failed to add handlers: %s", err.Error())
+	}
+
 	go http.ListenAndServe(":8080", Api())
 
 	queues, err := consumer.Consume()
@@ -84,6 +89,14 @@ func connectStore() error {
 	// Influx acts both as a store and as a handler
 	store = influx
 	handlers = append(handlers, influx)
+
+	return nil
+}
+
+func addHandlers() error {
+	// TODO: Delete after demo
+	waterSensor := NewWaterSensor()
+	handlers = append(handlers, waterSensor)
 
 	return nil
 }
