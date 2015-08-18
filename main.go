@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/thethingsnetwork/jolie/demo"
 	"log"
 	"net/http"
 )
@@ -95,7 +96,7 @@ func connectStore() error {
 
 func addHandlers() error {
 	// TODO: Delete after demo
-	waterSensor := NewWaterSensor()
+	waterSensor := demo.NewWaterSensor()
 	handlers = append(handlers, waterSensor)
 
 	return nil

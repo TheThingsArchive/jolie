@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/influxdb/influxdb/client"
+	"github.com/thethingsnetwork/server-shared"
 	"log"
 	"net/url"
 	"os"

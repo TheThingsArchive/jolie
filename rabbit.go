@@ -63,7 +63,7 @@ func (d *RabbitConsumer) Configure() error {
 	return nil
 }
 
-func (d *RabbitConsumer) Consume() (*ConsumerQueues, error) {
+func (d *RabbitConsumer) Consume() (*shared.ConsumerQueues, error) {
 	var err error
 	d.gatewayStatuses, err = d.consumeQueue("gateway.status", "gateway.status")
 	if err != nil {
@@ -77,7 +77,7 @@ func (d *RabbitConsumer) Consume() (*ConsumerQueues, error) {
 		return nil, err
 	}
 
-	queues := &ConsumerQueues{
+	queues := &shared.ConsumerQueues{
 		make(chan *shared.GatewayStatus),
 		make(chan *shared.RxPacket),
 	}
@@ -107,7 +107,7 @@ func (d *RabbitConsumer) consumeQueue(queueName, bindingKey string) (<-chan amqp
 	return deliveries, nil
 }
 
-func (d *RabbitConsumer) handleDeliveries(queues *ConsumerQueues) {
+func (d *RabbitConsumer) handleDeliveries(queues *shared.ConsumerQueues) {
 	for {
 		select {
 		case delivery := <-d.gatewayStatuses:
