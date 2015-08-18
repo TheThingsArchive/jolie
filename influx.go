@@ -79,7 +79,8 @@ func (ps *InfluxDatabase) Handle(queues *ConsumerQueues) {
 					"node_eui":    packet.NodeEui,
 				},
 				map[string]interface{}{
-					"data": packet.Data,
+					"raw_data": packet.RawData,
+					"data":     packet.Data,
 				},
 				packet.Time)
 		}
