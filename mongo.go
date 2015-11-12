@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/thethingsnetwork/server-shared"
-	"gopkg.in/mgo.v2"
 	"log"
 	"os"
 	"time"
+
+	"github.com/thethingsnetwork/server-shared"
+	"gopkg.in/mgo.v2"
 )
 
 const (
@@ -17,7 +18,7 @@ type MongoDatabase struct {
 	session *mgo.Session
 }
 
-func ConnectMongoDatabase() (*MongoDatabase, error) {
+func ConnectMongoDatabase() (Database, error) {
 	var err error
 	for i := 0; i < MONGODB_ATTEMPTS; i++ {
 		uri := os.Getenv("MONGODB_URI")
@@ -54,6 +55,21 @@ func (db *MongoDatabase) SaveApplication(app *Application) error {
 		return err
 	}
 	return nil
+}
+
+func (db *MongoDatabase) Handle(queues *shared.ConsumerQueues) {
+	for {
+		select {
+		case status := <-queues.GatewayStatuses:
+			err := db.session.DB("jolie").C("gateway_statuses").Insert(status)
+			log.Printf("Failed to save status: %s", err.Error())
+			//TODO report error and requeue packet
+		case packet := <-queues.RxPackets:
+			err := db.session.DB("jolie").C("rx_packets").Insert(packet)
+			log.Printf("Failed to save packet: %s", err.Error())
+			//TODO report error and requeue packet
+		}
+	}
 }
 
 func (db *MongoDatabase) RecordGatewayStatus(status *shared.GatewayStatus) error {
