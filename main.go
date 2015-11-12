@@ -1,10 +1,9 @@
 package main
 
 import (
+	"github.com/thethingsnetwork/server-shared"
 	"log"
 	"net/http"
-
-	"github.com/thethingsnetwork/server-shared"
 )
 
 var (

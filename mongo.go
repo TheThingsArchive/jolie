@@ -62,12 +62,18 @@ func (db *MongoDatabase) Handle(queues *shared.ConsumerQueues) {
 		select {
 		case status := <-queues.GatewayStatuses:
 			err := db.session.DB("jolie").C("gateway_statuses").Insert(status)
-			log.Printf("Failed to save status: %s", err.Error())
-			//TODO report error and requeue packet
+			log.Printf("Inserted gateway status %#v", status)
+			if err != nil {
+				//TODO report error and requeue packet
+				log.Printf("Failed to save status: %s", err.Error())
+			}
 		case packet := <-queues.RxPackets:
 			err := db.session.DB("jolie").C("rx_packets").Insert(packet)
-			log.Printf("Failed to save packet: %s", err.Error())
-			//TODO report error and requeue packet
+			log.Printf("Inserted RX packet %#v", packet)
+			if err != nil {
+				//TODO report error and requeue packet
+				log.Printf("Failed to save packet: %s", err.Error())
+			}
 		}
 	}
 }
