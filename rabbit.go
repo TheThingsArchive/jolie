@@ -21,7 +21,7 @@ type RabbitConsumer struct {
 	rxPackets       <-chan amqp.Delivery
 }
 
-func ConnectRabbitConsumer() (*RabbitConsumer, error) {
+func ConnectRabbitConsumer() (Consumer, error) {
 	var err error
 	for i := 0; i < RABBIT_ATTEMPTS; i++ {
 		uri := os.Getenv("AMQP_URI")
@@ -118,7 +118,6 @@ func (d *RabbitConsumer) handleDeliveries(queues *shared.ConsumerQueues) {
 				continue
 			}
 			queues.GatewayStatuses <- &status
-			log.Printf("Acking gateway status %q", delivery.Body)
 			delivery.Ack(false)
 		case delivery := <-d.rxPackets:
 			var rxPacket shared.RxPacket
@@ -128,7 +127,6 @@ func (d *RabbitConsumer) handleDeliveries(queues *shared.ConsumerQueues) {
 				continue
 			}
 			queues.RxPackets <- &rxPacket
-			log.Printf("Acking RX packet %q", delivery.Body)
 			delivery.Ack(false)
 		}
 	}

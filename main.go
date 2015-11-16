@@ -3,13 +3,12 @@ package main
 import (
 	"github.com/thethingsnetwork/server-shared"
 	"log"
-	"net/http"
 )
 
 var (
 	consumer Consumer
-	database Database
-	handlers []PacketHandler = make([]PacketHandler, 0)
+	mqtt     PacketHandler
+	database PacketHandler
 )
 
 func main() {
@@ -30,20 +29,12 @@ func main() {
 		log.Fatalf("Failed to connect database: %s", err.Error())
 	}
 
-	go http.ListenAndServe(":8080", Api())
+	err = connectMqtt(queues)
+	if err != nil {
+		log.Fatalf("Failed to connect MQTT: %s", err.Error())
+	}
 
 	select {}
-}
-
-func connectDatabase(queues *shared.ConsumerQueues) error {
-	var err error
-	database, err = ConnectMongoDatabase()
-	if err != nil {
-		return err
-	}
-	go database.Handle(queues)
-
-	return nil
 }
 
 func connectConsumer() error {
@@ -57,6 +48,28 @@ func connectConsumer() error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func connectDatabase(queues *shared.ConsumerQueues) error {
+	var err error
+	database, err = ConnectMongoDatabase()
+	if err != nil {
+		return err
+	}
+	go database.Handle(queues)
+
+	return nil
+}
+
+func connectMqtt(queues *shared.ConsumerQueues) error {
+	var err error
+	mqtt, err = ConnectPaho()
+	if err != nil {
+		return err
+	}
+	go mqtt.Handle(queues)
 
 	return nil
 }

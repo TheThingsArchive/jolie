@@ -1,8 +1,4 @@
 AMQP_URI=amqp://guest:guest@rabbitmq:5672
 MONGODB_URI=mongodb
 PRE_CREATE_DB="jolie"
-INFLUXDB_URL=influxdb
-INFLUXDB_PORT=8086
-INFLUXDB_USERNAME=root
-INFLUXDB_PASSWORD=root
-INFLUXDB_DBNAME=jolie
+MQTT_BROKER=tcp://mosquitto:1883
