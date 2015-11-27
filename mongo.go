@@ -42,20 +42,17 @@ func (db *MongoDatabase) Configure() error {
 	return nil
 }
 
-func (db *MongoDatabase) Handle(queues *shared.ConsumerQueues) {
-	for {
-		select {
-		case status := <-queues.GatewayStatuses:
-			err := db.session.DB("jolie").C("gateway_statuses").Insert(status)
-			if err != nil {
-				log.Printf("Failed to save status: %s", err.Error())
-			}
-		case packet := <-queues.RxPackets:
-			err := db.session.DB("jolie").C("rx_packets").Insert(packet)
-			if err != nil {
-				log.Printf("Failed to save packet: %s", err.Error())
-			}
-		}
+func (db *MongoDatabase) HandleStatus(status *shared.GatewayStatus) {
+	err := db.session.DB("jolie").C("gateway_statuses").Insert(status)
+	if err != nil {
+		log.Printf("Failed to save status: %s", err.Error())
+	}
+}
+
+func (db *MongoDatabase) HandlePacket(packet *shared.RxPacket) {
+	err := db.session.DB("jolie").C("rx_packets").Insert(packet)
+	if err != nil {
+		log.Printf("Failed to save packet: %s", err.Error())
 	}
 }
 

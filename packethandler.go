@@ -6,5 +6,6 @@ import (
 
 type PacketHandler interface {
 	Configure() error
-	Handle(*shared.ConsumerQueues)
+	HandleStatus(*shared.GatewayStatus)
+	HandlePacket(*shared.RxPacket)
 }

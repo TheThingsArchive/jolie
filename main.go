@@ -24,15 +24,17 @@ func main() {
 		log.Fatalf("Failed to consume queues: %s", err.Error())
 	}
 
-	err = connectDatabase(queues)
+	database, err = connectDatabase(queues)
 	if err != nil {
 		log.Fatalf("Failed to connect database: %s", err.Error())
 	}
 
-	err = connectMqtt(queues)
+	mqtt, err = connectMqtt(queues)
 	if err != nil {
 		log.Fatalf("Failed to connect MQTT: %s", err.Error())
 	}
+
+	go Handle(queues, []PacketHandler{database, mqtt})
 
 	select {}
 }
@@ -52,24 +54,37 @@ func connectConsumer() error {
 	return nil
 }
 
-func connectDatabase(queues *shared.ConsumerQueues) error {
+func connectDatabase(queues *shared.ConsumerQueues) (PacketHandler, error) {
 	var err error
 	database, err = ConnectMongoDatabase()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	go database.Handle(queues)
 
-	return nil
+	return database, nil
 }
 
-func connectMqtt(queues *shared.ConsumerQueues) error {
+func connectMqtt(queues *shared.ConsumerQueues) (PacketHandler, error) {
 	var err error
 	mqtt, err = ConnectPaho()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	go mqtt.Handle(queues)
 
-	return nil
+	return mqtt, nil
+}
+
+func Handle(queues *shared.ConsumerQueues, handlers []PacketHandler) {
+	for {
+		select {
+		case status := <-queues.GatewayStatuses:
+			for _, h := range handlers {
+				h.HandleStatus(status)
+			}
+		case packet := <-queues.RxPackets:
+			for _, h := range handlers {
+				h.HandlePacket(packet)
+			}
+		}
+	}
 }
